@@ -1,0 +1,43 @@
+name: GeoVoice CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+
+      # 🐍 Backend (Django)
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.11
+
+      - name: Install backend dependencies
+        run: pip install -r backend/requirements.txt
+
+      - name: Run backend lint
+        run: flake8 backend/
+
+      - name: Run backend tests
+        run: pytest backend/
+
+      # ⚛️ Frontend (React)
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+    #   - name: Install frontend dependencies
+    #     run: |
+    #       cd frontend
+    #       npm install
+
+    #   - name: Build frontend
+    #     run: |
+    #       cd frontend
+    #       npm run build
