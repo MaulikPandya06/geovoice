@@ -13,6 +13,10 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 from decouple import config
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 
 
@@ -179,3 +183,14 @@ SPECTACULAR_SETTINGS = {
 }
 
 CORS_ALLOW_ALL_ORIGINS = True
+
+CELERY_BEAT_SCHEDULE = {
+    "sync_and_classify_every_15_min": {
+        "task": "core.tasks.sync_and_classify",
+        "schedule": timedelta(minutes=15),
+    },
+}
+
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+

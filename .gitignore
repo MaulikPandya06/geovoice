@@ -1,0 +1,143 @@
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual environments
+env/
+venv/
+.venv/
+
+# Python packaging
+build/
+dist/
+*.egg-info/
+
+# =========================
+# Django
+# =========================
+*.log
+*.pot
+*.pyc
+db.sqlite3
+media/
+staticfiles/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# Django migrations cache
+**/migrations/*.pyc
+
+# =========================
+# Pytest / Coverage
+# =========================
+.pytest_cache/
+.coverage
+htmlcov/
+coverage.xml
+
+# =========================
+# VS Code / IDE
+# =========================
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# =========================
+# Node / React
+# =========================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# React build
+frontend/build/
+frontend/dist/
+
+# =========================
+# Docker
+# =========================
+*.pid
+*.seed
+*.pid.lock
+
+# Docker override files
+docker-compose.override.yml
+
+# =========================
+# Elasticsearch
+# =========================
+es_data/
+
+# =========================
+# Diplomatic Pulse
+# =========================
+scrapyd_logs/
+
+# =========================
+# Playwright
+# =========================
+playwright_data/
+playwright/.auth/
+
+# Browser/session data
+*.har
+
+# =========================
+# OS Files
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# Temporary Files
+# =========================
+tmp/
+temp/
+*.tmp
+
+# =========================
+# AI / ML
+# =========================
+*.pt
+*.pth
+*.onnx
+*.ckpt
+
+# =========================
+# Logs
+# =========================
+logs/
+*.log
+
+# =========================
+# Secrets / Credentials
+# =========================
+secrets/
+credentials.json
+service-account.json
+*.pem
+*.key
+*.crt
+
+# =========================
+# Jupyter
+# =========================
+.ipynb_checkpoints/
+
+# =========================
+# Redis
+# =========================
+dump.rdb
+
+# =========================
+# Mac/Linux hidden
+# =========================
+.*.swp

@@ -126,7 +126,7 @@ class EventHeatmapView(APIView):
             )\
             .annotate(statement_count=Count('id'))\
             .order_by('-statement_count')
-
+        print("**heatmap",heatmap)
         return Response([
             {
                 "country": i['country__name'],
