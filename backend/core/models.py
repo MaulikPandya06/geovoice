@@ -1,4 +1,5 @@
 from django.db import models
+from pgvector.django import VectorField, HnswIndex
 
 
 class Country(models.Model):
@@ -7,8 +8,8 @@ class Country(models.Model):
     full_name = models.CharField(max_length=200, null=True, blank=True)
     isoa3_code = models.CharField(max_length=5, unique=True)
     isoa2_code = models.CharField(max_length=5, unique=True)
-    lat = models.FloatField()
-    lng = models.FloatField()
+    lat = models.FloatField(null=True, blank=True)
+    lng = models.FloatField(null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -79,3 +80,28 @@ class Statement(models.Model):
 
     def __str__(self):
         return f"{self.country.name} - {self.event.title}"
+
+
+class StatementChunk(models.Model):
+    statement   = models.ForeignKey(
+        Statement, on_delete=models.CASCADE, related_name='chunks'
+    )
+    chunk_index = models.IntegerField()       # position: 0, 1, 2...
+    chunk_text  = models.TextField()          # the actual chunk content
+    embedding   = VectorField(dimensions=1024, null=True, blank=True)
+    # NVIDIA NIM models output 1024-dimensional vectors
+
+    class Meta:
+        ordering = ['chunk_index']
+        indexes = [
+            HnswIndex(
+                name='chunk_embedding_hnsw_idx',
+                fields=['embedding'],
+                m=16,
+                ef_construction=64,
+                opclasses=['vector_cosine_ops']
+            )
+        ]
+
+    def __str__(self):
+        return f"Statement {self.statement_id} | Chunk {self.chunk_index}"

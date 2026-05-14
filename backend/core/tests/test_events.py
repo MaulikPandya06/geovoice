@@ -17,7 +17,7 @@ class EventCRUDTest(TestCase):
     def test_create_event(self):
         response = self.client.post('/api/events/', {
             "title": "New Event",
-            "date": "2024-01-01"
+            "start_date": "2024-01-01"
         })
 
         self.assertEqual(response.status_code, 201)
@@ -25,7 +25,7 @@ class EventCRUDTest(TestCase):
     def test_update_event(self):
         res = self.client.post('/api/events/', {
             "title": "Old",
-            "date": "2024-01-01"
+            "start_date": "2024-01-01"
         })
         event_id = res.data['id']
 
@@ -39,8 +39,9 @@ class EventCRUDTest(TestCase):
     def test_delete_event(self):
         res = self.client.post('/api/events/', {
             "title": "Delete Me",
-            "date": "2024-01-01"
+            "start_date": "2024-01-01"
         })
+        print("***res",res)
         event_id = res.data['id']
 
         response = self.client.delete(f'/api/events/{event_id}/')

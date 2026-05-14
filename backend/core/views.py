@@ -11,6 +11,13 @@ from .serializers import EventSerializer, StatementSerializer, CountrySerializer
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
 from .permissions import IsAdminOrReadOnly
 
+import json
+from django.views import View
+from django.http import JsonResponse
+from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
+from core.services.rag_service import answer_question, generate_summary
+
 
 # GET + POST
 class EventListCreateView(generics.ListCreateAPIView):
@@ -137,3 +144,48 @@ class EventHeatmapView(APIView):
             }
             for i in heatmap
         ])
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ChatbotView(View):
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data     = json.loads(request.body)
+            question = data.get('question', '').strip()
+            country  = data.get('country', '').strip()
+            event    = data.get('event', '').strip()
+
+            if not all([question, country, event]):
+                return JsonResponse(
+                    {"error": "question, country, and event are all required"},
+                    status=400
+                )
+
+            answer = answer_question(query=question, country=country, event=event)
+            return JsonResponse({"answer": answer})
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
+
+
+@method_decorator(csrf_exempt, name='dispatch')
+class SummaryView(View):
+
+    def post(self, request, *args, **kwargs):
+        try:
+            data    = json.loads(request.body)
+            country = data.get('country', '').strip()
+            event   = data.get('event', '').strip()
+
+            if not all([country, event]):
+                return JsonResponse(
+                    {"error": "country and event are required"},
+                    status=400
+                )
+
+            summary = generate_summary(country=country, event=event)
+            return JsonResponse({"summary": summary})
+
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)

@@ -15,10 +15,10 @@ class HeatmapAPITest(TestCase):
         )
         self.client.force_authenticate(user=self.admin)
         self.country = Country.objects.create(
-            name="USA", code="US", lat=37.0, lng=-95.0
+            name="USA", isoa2_code="US", lat=37.0, lng=-95.0, isoa3_code='USA'
         )
         self.event = Event.objects.create(
-            title="War", date="2024-01-01"
+            title="War", start_date="2024-01-01"
         )
 
     def test_heatmap(self):
@@ -27,7 +27,7 @@ class HeatmapAPITest(TestCase):
             event=self.event,
             text="Statement 1",
             stance="support",
-            date="2024-01-02"
+            publish_date="2024-01-02"
         )
 
         Statement.objects.create(
@@ -35,7 +35,7 @@ class HeatmapAPITest(TestCase):
             event=self.event,
             text="Statement 2",
             stance="support",
-            date="2024-01-03"
+            publish_date="2024-01-03"
         )
 
         response = self.client.get(f'/api/events/{self.event.id}/heatmap/')
