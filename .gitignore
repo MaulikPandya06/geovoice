@@ -5,6 +5,9 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+**/migrations/*
+!**/migrations/__init__.py
+
 # Virtual environments
 env/
 venv/

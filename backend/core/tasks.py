@@ -25,6 +25,43 @@ CLASSIFY_LOCK_TTL = 60 * 30  # 30 min max lock (safety valve)
 
 @shared_task
 def sync_diplomaticpulse_to_rawpost():
+    COUNTRIES = {
+        "Republic of India": "India",
+        "People's Republic of China": "China",
+        "Russian Federation": "Russia",
+        "Islamic Republic of Iran": "Iran",
+        "Syrian Arab Republic": "Syria",
+        "Republic of Korea": "South Korea",
+        "Democratic People's Republic of Korea": "North Korea",
+        "Plurinational State of Bolivia": "Bolivia",
+        "Bolivarian Republic of Venezuela": "Venezuela",
+        "United Republic of Tanzania": "Tanzania",
+        "Republic of Moldova": "Moldova",
+        "Socialist Republic of Viet Nam": "Vietnam",
+        "Lao People's Democratic Republic": "Laos",
+        "Brunei Darussalam": "Brunei",
+        "Republic of Cabo Verde": "Cape Verde",
+        "Republic of Côte d'Ivoire": "Ivory Coast",
+        "Czech Republic": "Czech Republic",
+        "United States of America": "United States",
+        "United Kingdom of Great Britain and Northern Ireland": "United Kingdom",
+        "State of Palestine": "Palestine",
+        "Federated States of Micronesia": "Micronesia",
+        "Republic of Trinidad and Tobago": "Trinidad",
+        "Republic of Türkiye": "Turkey",
+        "Federal Republic of Germany": "Germany",
+        "French Republic": "France",
+        "Federative Republic of Brazil": "Brazil",
+        "Islamic Republic of Pakistan": "Pakistan",
+        "People's Republic of Bangladesh": "Bangladesh",
+        "Kingdom of Saudi Arabia": "Saudi Arabia",
+        "Japan": "Japan",
+        "Commonwealth of Australia": "Australia",
+        "Canada": "Canada",
+        "United Mexican States": "Mexico",
+        "Argentine Republic": "Argentina",
+    }
+
     es = Elasticsearch(
         hosts=[os.getenv("ELASTIC_HOST")],
         http_auth=(os.getenv("ELASTIC_USERNAME"), os.getenv("ELASTIC_PASSWORD")),
@@ -64,13 +101,14 @@ def sync_diplomaticpulse_to_rawpost():
                 skipped += 1
                 continue
 
+            country_name = COUNTRIES.get(src.get('country', '').strip(), src.get('country', '').strip())
             # Match country
             country = Country.objects.filter(
-                full_name__iexact=src.get('country', '').strip()
+                name__iexact=country_name
             ).first()
 
             if not country:
-                logger.warning(f"Country not found: {src.get('country')}")
+                logger.warning(f"Country not found: {country_name}")
                 skipped += 1
                 continue
 
@@ -135,7 +173,9 @@ KNOWN GEOPOLITICAL EVENTS (choose ONE most relevant, or null if none fit):
 ---
 ANALYSIS INSTRUCTIONS:
 1. Read the statement carefully. If it is not in English, analyze the meaning.
-2. Match it to ONE event from the list above that it directly relates to.
+2. Match it to ONE event even if the event is referenced INDIRECTLY — "
+"through geography (e.g. 'Strait of Hormuz'), organizations (e.g. 'IRGC'), "
+"or related terminology (e.g. 'West Asia tensions', 'Gulf escalation').
 3. Determine the country's STANCE toward that event:
    - "support" → endorses, agrees with, or backs the position/event
    - "oppose"  → criticizes, condemns, or stands against it
@@ -294,14 +334,17 @@ RULES:
                     logger.info(f"[{post.country.name}] → No match or low confidence ({confidence:.2f})")
 
                 processed += 1
+                post.classify_ai_processed = True
+                post.save()
 
             except Exception as e:
                 logger.error(f"Error processing post index {idx}: {e}")
                 failed += 1
 
             finally:
-                post.classify_ai_processed = True
-                post.save()
+                pass
+                # post.classify_ai_processed = True
+                # post.save()
 
         logger.info(f"Batch done — Processed: {processed} | Created: {created_statements} | Failed: {failed}")
         return {"processed": processed, "statements_created": created_statements, "failed": failed}

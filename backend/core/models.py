@@ -2,6 +2,7 @@ from django.db import models
 
 
 class Country(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=100)
     full_name = models.CharField(max_length=200, null=True, blank=True)
     isoa3_code = models.CharField(max_length=5, unique=True)
