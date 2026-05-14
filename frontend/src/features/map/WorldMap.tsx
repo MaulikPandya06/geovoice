@@ -2,6 +2,7 @@ import { useEffect, useRef } from "react";
 import * as d3 from "d3";
 import { feature } from "topojson-client";
 import worldData from "./world-110m.json";
+import colorScale from "../../map/utils/colorScale";
 
 type Props = {
   heatmapData: any[];
@@ -75,16 +76,16 @@ export default function WorldMap({
     // };
 
     // 🎨 Color scale
-    const colorScale = d3
-      .scaleThreshold<number, string>()
-      .domain([1, 5, 20, 50])
-      .range([
-        "#374151",
-        "#facc15",
-        "#fb923c",
-        "#f97316",
-        "#dc2626",
-      ]);
+    // const colorScale = d3
+    //   .scaleThreshold<number, string>()
+    //   .domain([1, 5, 20, 50])
+    //   .range([
+    //     "#374151",
+    //     "#facc15",
+    //     "#fb923c",
+    //     "#f97316",
+    //     "#dc2626",
+    //   ]);
 
     // 🌍 Main group (for zoom)
     const g = svg.append("g");
@@ -120,13 +121,9 @@ export default function WorldMap({
           (c) => c.isoa3_code === d.properties.ISO_A3
         );
 
-        if (!country) return "#374151";
+        const count = country?.statement_count || 0;
 
-        if (country.statement_count > 20) return "#ef4444";
-
-        if (country.statement_count > 10) return "#f97316";
-
-        return "#eab308";
+        return colorScale(count);
       })
       .attr("stroke", "#111827")
       .attr("stroke-width", 0.5)

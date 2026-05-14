@@ -1,38 +1,80 @@
+import { useState } from "react";
+import OverviewTab from "../../components/common/OverviewTab";
+import StatementsTab from "../../components/common/StatementsTab";
+import InsightsTab from "../../components/common/InsightsTab";
+import { getInvolvement } from "../../utils/involvement";
+
 type Props = {
   selectedCountry: any;
   countryStatements: any[];
+  selectedEvent: any;
 };
+
+type TabButtonProps = {
+  active: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+};
+
+function TabButton({
+  active,
+  onClick,
+  children,
+}: TabButtonProps) {
+  return (
+    <button
+      onClick={onClick}
+      className={`
+        relative
+        pb-2
+        text-[13px]
+        font-medium
+        transition
+
+        ${
+          active
+            ? "text-blue-400"
+            : "text-gray-400 hover:text-white"
+        }
+      `}
+    >
+      {children}
+
+      {active && (
+        <span
+          className="
+            absolute
+            bottom-0
+            left-0
+            h-[2px]
+            w-full
+            rounded-full
+            bg-blue-500
+          "
+        />
+      )}
+    </button>
+  );
+}
 
 
 export default function CountryPanel({
   selectedCountry,
   countryStatements,
+  selectedEvent,
 }: Props) {
+
+  const [activeTab, setActiveTab] =
+  useState<"overview" | "statements" | "insights">(
+    "overview"
+  );
 
   const statementCount = countryStatements.length;
 
-  let involvement = "Low";
-  let involvementColor = "text-yellow-400";
-  let involvementDotColor = "bg-yellow-400";
+  const involvementData =
+  getInvolvement(statementCount);
 
-  if (statementCount >= 20) {
-    involvement = "High";
-    involvementColor = "text-red-500";
-    involvementDotColor = "bg-red-500";
 
-  } else if (statementCount >= 10) {
-    involvement = "Medium";
-    involvementColor = "text-orange-400";
-    involvementDotColor = "bg-orange-400";
-  }
-  const activeBars =
-  involvement === "High"
-    ? 5
-    : involvement === "Medium"
-    ? 3
-    : 1;
-
-  console.log("Selected Country:", selectedCountry);
 
   if (!selectedCountry) {
     return (
@@ -257,11 +299,11 @@ export default function CountryPanel({
             </p>
 
             <div className="mt-2 flex items-center gap-2">
-              <div className={`h-2 w-2 rounded-full ${involvementDotColor}`} />
+              <div className={`h-2 w-2 rounded-full ${involvementData.dotColor}`} />
 
-              <span className={`text-lg font-semibold ${involvementColor}`}>
+              <span className={`text-lg font-semibold ${involvementData.textColor}`}>
                 {/* High */}
-                {involvement}
+                {involvementData.label}
               </span>
             </div>
 
@@ -277,7 +319,7 @@ export default function CountryPanel({
                     transition-all
 
                     ${
-                      i <= activeBars
+                      i <= involvementData.activeBars
                         ? "bg-gradient-to-r from-red-500 via-orange-400 to-orange-300"
                         : "bg-gray-800"
                     }
@@ -348,43 +390,26 @@ export default function CountryPanel({
             [&::-webkit-scrollbar]:hidden
           "
         >
-          {/* Active */}
-          <button
-            className="
-              relative
-              pb-2
-              text-[13px]
-              font-medium
-              text-blue-400
-            "
+          <TabButton
+            active={activeTab === "overview"}
+            onClick={() => setActiveTab("overview")}
           >
             Overview
+          </TabButton>
 
-            <span
-              className="
-                absolute
-                bottom-0
-                left-0
-                h-[2px]
-                w-full
-                rounded-full
-                bg-blue-500
-              "
-            />
-          </button>
-
-          <button className="pb-2 text-[13px] text-gray-400 hover:text-white transition">
-            {/* Statements (23) */}
+          <TabButton
+            active={activeTab === "statements"}
+            onClick={() => setActiveTab("statements")}
+          >
             Statements ({countryStatements.length})
-          </button>
+          </TabButton>
 
-          <button className="pb-2 text-[13px] text-gray-400 hover:text-white transition">
-            Timeline
-          </button>
-
-          <button className="pb-2 text-[13px] text-gray-400 hover:text-white transition">
-            Sources
-          </button>
+          <TabButton
+            active={activeTab === "insights"}
+            onClick={() => setActiveTab("insights")}
+          >
+            AI Insights
+          </TabButton>
         </div>
       </div>
 
@@ -403,103 +428,25 @@ export default function CountryPanel({
         "
       >
         {/* Latest Statement */}
-        <section
-          className="
-            rounded-2xl
-            border border-gray-800/70
-            bg-gradient-to-b
-            from-[#08111f]
-            to-[#050c18]
-            p-4
-          "
-        >
-          <div className="flex items-center justify-between gap-4">
-            <h3 className="text-base font-semibold text-white">
-              Latest Statement
-            </h3>
+        {activeTab === "overview" && (
+          <OverviewTab
+            countryStatements={countryStatements}
+          />
+        )}
 
-            <span className="text-xs text-gray-400">
-              May 21, 2024
-            </span>
-          </div>
-
-          <p
-            className="
-              mt-4
-              text-sm
-              leading-7
-              text-gray-200
-            "
-          >
-            {/* “Turkey continues to call for an immediate
-            cessation of hostilities and emphasizes the
-            importance of a two-state solution...” */}
-            “{countryStatements[0]?.text}”
-          </p>
-
-          <button
-            className="
-              mt-4
-              text-sm
-              font-medium
-              text-blue-400
-              transition
-              hover:text-blue-300
-            "
-          >
-            Ministry of Foreign Affairs ↗
-          </button>
-        </section>
+        {/* Statements */}
+        {activeTab === "statements" && (
+          <StatementsTab
+            countryStatements={countryStatements}
+            selectedCountry={selectedCountry}
+          />
+        )}
 
         {/* AI Summary */}
-        <section
-          className="
-            rounded-2xl
-            border border-gray-800/70
-            bg-gradient-to-b
-            from-[#08111f]
-            to-[#050c18]
-            p-4
-          "
-        >
-          <div className="flex items-center gap-2">
-            <h3 className="text-base font-semibold text-white">
-              AI Summary
-            </h3>
-
-            <span
-              className="
-                rounded-md
-                border border-gray-700
-                bg-gray-800/80
-                px-2 py-0.5
-                text-[10px]
-                font-semibold
-                uppercase
-                tracking-wide
-                text-gray-300
-              "
-            >
-              Beta
-            </span>
-          </div>
-
-          <p
-            className="
-              mt-4
-              text-sm
-              leading-7
-              text-gray-200
-            "
-          >
-            Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-            Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
-            into electronic typesetting, remaining essentially unchanged.
-          </p>
-        </section>
+        {activeTab === "insights" && <InsightsTab selectedEvent={selectedEvent} />}
 
         {/* Distribution */}
-        <section
+        {/* <section
           className="
             rounded-2xl
             border border-gray-800/70
@@ -511,10 +458,10 @@ export default function CountryPanel({
         >
           <h3 className="text-base font-semibold text-white">
             Statement Distribution
-          </h3>
+          </h3> */}
 
           {/* Chart */}
-          <div className="mt-6 h-36 flex items-end gap-[4px]">
+          {/* <div className="mt-6 h-36 flex items-end gap-[4px]">
             {[
               4, 5, 3, 6, 8, 4, 2, 3, 7, 9,
               5, 4, 2, 8, 4, 3, 5, 7, 4, 2,
@@ -535,20 +482,20 @@ export default function CountryPanel({
                 }}
               />
             ))}
-          </div>
+          </div> */}
 
           {/* Timeline */}
-          <div className="mt-3 flex justify-between text-[11px] text-gray-500">
+          {/* <div className="mt-3 flex justify-between text-[11px] text-gray-500">
             <span>Oct 2023</span>
             <span>Dec 2023</span>
             <span>Feb 2024</span>
             <span>Apr 2024</span>
             <span>May 2024</span>
-          </div>
-        </section>
+          </div> */}
+        {/* </section> */}
 
         {/* CTA */}
-        <button
+        {/* <button
           className="
             w-full
             rounded-2xl
@@ -563,9 +510,9 @@ export default function CountryPanel({
             hover:text-blue-300
           "
         >
-          {/* ◈ View All Statements (23) */}
+          ◈ View All Statements (23)
           ◈ View All Statements ({countryStatements.length})
-        </button>
+        </button>  */}
       </div>
     </aside>
   );

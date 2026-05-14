@@ -11,16 +11,25 @@ type Event = {
 };
 
 type State = {
-  selectedCountry: Country | null;
   selectedEvent: Event | null;
-  setCountry: (c: Country) => void;
-  setEvent: (e: Event) => void;
+  selectedCountry: Country | null;
+
+  setEvent: (event: Event) => void;
+  setCountry: (country: Country | null) => void;
 };
 
 export const useGlobalStore = create<State>((set) => ({
-  selectedCountry: null,
   selectedEvent: null,
+  selectedCountry: null,
 
-  setCountry: (country) => set({ selectedCountry: country }),
-  setEvent: (event) => set({ selectedEvent: event }),
+  setEvent: (event) =>
+    set({
+      selectedEvent: event,
+      selectedCountry: null,
+    }),
+
+  setCountry: (country) =>
+    set({
+      selectedCountry: country,
+    }),
 }));

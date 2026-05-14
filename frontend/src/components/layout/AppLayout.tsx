@@ -1,3 +1,6 @@
+import DevelopmentBanner from "../common/DevelopmentBanner";
+
+
 export default function AppLayout({
   children,
 }: {
@@ -12,6 +15,8 @@ export default function AppLayout({
         <header className="h-14 border-b border-gray-800 flex items-center px-4 shrink-0">
           Global Event Monitor
         </header>
+
+        <DevelopmentBanner />
 
         {/* Main */}
         <main className="flex flex-1 min-h-0 overflow-hidden">

@@ -1,14 +1,27 @@
+import { colors } from "../../map/utils/colorScale";
+
 type LegendItem = {
   color: string;
   label: string;
 };
 
-const legendItems: LegendItem[] = [
-  { color: "#374151", label: "No Statements" },
-  { color: "#facc15", label: "1–5 Statements" },
-  { color: "#fb923c", label: "6–20 Statements" },
-  { color: "#f97316", label: "21–50 Statements" },
-  { color: "#dc2626", label: "50+ Statements" },
+export const legendItems = [
+  {
+    color: colors[0],
+    label: "No Statements",
+  },
+  {
+    color: colors[1],
+    label: "1–3 Statements",
+  },
+  {
+    color: colors[2],
+    label: "4–5 Statements",
+  },
+  {
+    color: colors[3],
+    label: "6+ Statements",
+  },
 ];
 
 export default function MapLegend() {

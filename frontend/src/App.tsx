@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import AppLayout from "./components/layout/AppLayout";
 import EventsPanel from "./features/events/EventsPanel";
@@ -14,6 +14,13 @@ export default function App() {
   const [selectedCountry, setSelectedCountry] = useState<any>(null);
 
   const [countryStatements, setCountryStatements] = useState<any[]>([]);
+
+  // RESET dependent state when event changes
+  useEffect(() => {
+    setSelectedCountry(null);
+    setCountryStatements([]);
+  }, [selectedEvent]);
+
 
   return (
     <AppLayout>
@@ -31,6 +38,7 @@ export default function App() {
       <CountryPanel
         selectedCountry={selectedCountry}
         countryStatements={countryStatements}
+        selectedEvent={selectedEvent}
       />
     </AppLayout>
   );
