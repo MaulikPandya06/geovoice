@@ -6,6 +6,7 @@ from core.models import (
     CountryEventSummary
 )
 
+
 def get_nvidia_client():
 
     nvidia_api_key = os.getenv(
@@ -16,6 +17,7 @@ def get_nvidia_client():
         base_url="https://integrate.api.nvidia.com/v1",
         api_key=nvidia_api_key,
     )
+
 
 # Approx safe size for Llama 3.1 prompt batching
 MAX_CHARS_PER_BATCH = 12000

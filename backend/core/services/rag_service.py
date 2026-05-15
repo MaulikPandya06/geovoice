@@ -4,6 +4,7 @@ from pgvector.django import CosineDistance
 from core.models import StatementChunk
 from core.services.embedding_service import get_query_embedding
 
+
 def get_nvidia_client():
 
     nvidia_api_key = os.getenv(

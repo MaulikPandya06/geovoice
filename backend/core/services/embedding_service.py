@@ -6,6 +6,7 @@ from core.services.chunking_service import chunk_text
 
 load_dotenv()
 
+
 # NVIDIA NIM client — OpenAI-compatible interface, just different base_url
 def get_nvidia_client():
 
@@ -17,6 +18,7 @@ def get_nvidia_client():
         base_url="https://integrate.api.nvidia.com/v1",
         api_key=nvidia_api_key,
     )
+
 
 EMBEDDING_MODEL = "nvidia/nv-embedqa-e5-v5"  # best for Q&A retrieval RAG
 EMBEDDING_DIMENSIONS = 1024
