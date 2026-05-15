@@ -25,15 +25,18 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = (
-    "django-insecure-md60cx_!w)t2^mtvp(gl@lxz@s6g@#*7"
-    "+x6gpw6ox#q9nc_t-z"
-)
+SECRET_KEY = config("SECRET_KEY", default="unsafe-secret")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = config("DEBUG", default=False, cast=bool)
 
 ALLOWED_HOSTS = []
+ALLOWED_HOSTS.extend(
+    filter(
+        None,
+        config('ALLOWED_HOSTS', default='').split(','),
+    )
+)
 
 # Application definition
 
@@ -197,9 +200,17 @@ CELERY_BEAT_SCHEDULE = {
     },
 }
 
-CELERY_BROKER_URL = "redis://localhost:6379/0"
-CELERY_RESULT_BACKEND = "redis://localhost:6379/0"
+CELERY_BROKER_URL = config(
+    "CELERY_BROKER_URL", default="redis://redis:6379/0"
+)
+CELERY_RESULT_BACKEND = config(
+    "CELERY_RESULT_BACKEND", default="redis://redis:6379/0"
+)
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
 ]
+
+STATIC_URL = "/static/"
+STATIC_ROOT = BASE_DIR / "staticfiles"
+

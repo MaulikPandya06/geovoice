@@ -36,7 +36,7 @@ jobs:
       - name: Install backend dependencies
         working-directory: backend
         run: |
-          pip install -r requirements2.txt
+          pip install -r requirements.txt
 
       - name: Run backend lint
         working-directory: backend
