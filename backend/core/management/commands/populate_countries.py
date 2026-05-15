@@ -4,7 +4,11 @@ from core.models import Country
 
 # Source: https://gist.github.com/subbe/428e74e2d77ccb33e58a458a7d591207
 # Has: name, iso (alpha3), iso2 (alpha2), latitude, longitude, flag URL
-COUNTRIES_URL = "https://gist.githubusercontent.com/subbe/428e74e2d77ccb33e58a458a7d591207/raw/countries.json"
+COUNTRIES_URL = (
+    "https://gist.githubusercontent.com/subbe/"
+    "428e74e2d77ccb33e58a458a7d591207/raw/"
+    "countries.json"
+)
 
 # DiplomaticPulse uses UN-style full names — map them to standard names
 FULL_NAME_MAP = {
@@ -44,6 +48,7 @@ FULL_NAME_MAP = {
     "Argentina": "Argentine Republic",
 }
 
+
 class Command(BaseCommand):
     help = "Populate Country model with ISO codes, lat/lng, and flag URLs"
 
@@ -68,7 +73,6 @@ class Command(BaseCommand):
             isoa2 = c.get("iso2", "").strip()
             lat = c.get("latitude")
             lng = c.get("longitude")
-            flag_url = c.get("flag", "")
 
             if not all([name, isoa3, isoa2, lat, lng]):
                 skipped_count += 1
@@ -96,6 +100,12 @@ class Command(BaseCommand):
                 self.stderr.write(f"Error saving {name}: {e}")
                 skipped_count += 1
 
-        self.stdout.write(self.style.SUCCESS(
-            f"Done! Created: {created_count} | Updated: {updated_count} | Skipped: {skipped_count}"
-        ))
+        self.stdout.write(
+            self.style.SUCCESS(
+                (
+                    f"Done! Created: {created_count} | "
+                    f"Updated: {updated_count} | "
+                    f"Skipped: {skipped_count}"
+                )
+            )
+        )

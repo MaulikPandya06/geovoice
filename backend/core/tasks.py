@@ -3,11 +3,9 @@ import json
 import logging
 import os
 from datetime import datetime
-from time import sleep
 
 import redis
 from celery import shared_task
-from django.conf import settings
 from django.utils import timezone
 from elasticsearch import Elasticsearch
 from openai import OpenAI
@@ -246,13 +244,16 @@ ANALYSIS INSTRUCTIONS:
 3. Determine the country's STANCE toward that event:
    - "support" → endorses, agrees with, or backs the position/event
    - "oppose"  → criticizes, condemns, or stands against it
-   - "neutral" → acknowledges without clear side, or is about unrelated bilateral matters
+   - "neutral" → acknowledges without clear side, or is about
+        unrelated bilateral matters
 4. Write a concise 2-3 sentence English summary.
 5. Extract 3-5 key topics (countries, orgs, conflicts, treaties mentioned).
-6. Rate confidence 0.0-1.0 on how clearly this statement relates to the chosen event.
+6. Rate confidence 0.0-1.0 on how clearly this statement
+    relates to the chosen event.
 
 RULES:
-- If statement is about routine bilateral trade/cultural ties not related to any event → event_id: null, stance: "neutral"
+- If statement is about routine bilateral trade/cultural
+    ties not related to any event → event_id: null, stance: "neutral"
 - Do NOT guess or hallucinate events not in the list
 - Confidence < 0.5 = weak or ambiguous link
 - ONLY return valid JSON, no extra text, no markdown

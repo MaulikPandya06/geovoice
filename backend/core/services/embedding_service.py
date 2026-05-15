@@ -73,6 +73,9 @@ def embed_statement(statement: Statement) -> int:
             chunk_text=chunk,
             embedding=embedding_vector
         )
-        print(f"  ✓ Statement {statement.id} | Chunk {index + 1}/{len(chunks)}")
+        print(
+            f"✓ Statement {statement.id} | "
+            f"Chunk {index + 1}/{len(chunks)}"
+        )
 
     return len(chunks)

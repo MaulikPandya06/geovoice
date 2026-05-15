@@ -20,9 +20,11 @@ class Command(BaseCommand):
             statements = Statement.objects.all()
         else:
             # Only embed statements that have no chunks yet
-            statements = (Statement.objects
-                            .filter(chunks__isnull=True)
-                            .distinct())
+            statements = (
+                Statement.objects
+                .filter(chunks__isnull=True)
+                .distinct()
+            )
 
         total = statements.count()
         self.stdout.write(f"Embedding {total} statements...")
@@ -30,6 +32,10 @@ class Command(BaseCommand):
         for i, statement in enumerate(statements, 1):
             self.stdout.write(f"[{i}/{total}] Statement ID {statement.id}")
             count = embed_statement(statement)
-            self.stdout.write(self.style.SUCCESS(f"  → {count} chunks created"))
+            self.stdout.write(
+                self.style.SUCCESS(
+                    f"  → {count} chunks created"
+                )
+            )
 
         self.stdout.write(self.style.SUCCESS("Done! All statements embedded."))

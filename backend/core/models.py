@@ -38,7 +38,7 @@ class RawPost(models.Model):
 
     # Twitter fields
     account_handle = models.CharField(max_length=255, blank=True)
-    post_id = models.CharField(max_length=255, unique=True)  # use URL hash for web
+    post_id = models.CharField(max_length=255, unique=True)
     post_text = models.TextField(blank=True)
     image_text = models.TextField(blank=True)
     combined_text = models.TextField(blank=True)
@@ -50,7 +50,7 @@ class RawPost(models.Model):
     title = models.TextField(blank=True)
     source_url = models.URLField(max_length=500, null=True, blank=True)
     language = models.CharField(max_length=50, blank=True)
-    content_type = models.CharField(max_length=50, blank=True)  # static/pdf/javascript
+    content_type = models.CharField(max_length=50, blank=True)
 
     posted_at = models.DateTimeField()
     post_url = models.URLField(max_length=500, null=True, blank=True)
@@ -67,7 +67,9 @@ class Statement(models.Model):
         ('oppose', 'Oppose'),
     ]
 
-    raw_post = models.OneToOneField(RawPost, on_delete=models.CASCADE, null=True, blank=True)
+    raw_post = models.OneToOneField(
+        RawPost, on_delete=models.CASCADE, null=True, blank=True
+    )
     country = models.ForeignKey(Country, on_delete=models.CASCADE)
     event = models.ForeignKey(Event, on_delete=models.CASCADE)
     text = models.TextField()
@@ -83,12 +85,12 @@ class Statement(models.Model):
 
 
 class StatementChunk(models.Model):
-    statement   = models.ForeignKey(
+    statement = models.ForeignKey(
         Statement, on_delete=models.CASCADE, related_name='chunks'
     )
     chunk_index = models.IntegerField()       # position: 0, 1, 2...
-    chunk_text  = models.TextField()          # the actual chunk content
-    embedding   = VectorField(dimensions=1024, null=True, blank=True)
+    chunk_text = models.TextField()          # the actual chunk content
+    embedding = VectorField(dimensions=1024, null=True, blank=True)
     # NVIDIA NIM models output 1024-dimensional vectors
 
     class Meta:

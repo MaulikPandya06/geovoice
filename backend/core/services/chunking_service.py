@@ -1,6 +1,10 @@
 # statements/services/chunking_service.py
 
-def chunk_text(text: str, chunk_size: int = 400, overlap: int = 50) -> list[str]:
+def chunk_text(
+    text: str,
+    chunk_size: int = 400,
+    overlap: int = 50,
+) -> list[str]:
     """
     Split text into overlapping word-based chunks.
 
@@ -24,7 +28,7 @@ def chunk_text(text: str, chunk_size: int = 400, overlap: int = 50) -> list[str]
     step = chunk_size - overlap  # 350 — how far we move forward each iteration
 
     for i in range(0, len(words), step):
-        chunk_words = words[i : i + chunk_size]
+        chunk_words = words[i: i + chunk_size]
 
         # Skip tiny trailing chunks (less than 50 words = not useful)
         if len(chunk_words) < 50:
