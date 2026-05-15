@@ -11,7 +11,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      # 🐍 Backend (Django)
+      # Backend (Django)
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
@@ -24,7 +24,8 @@ jobs:
         run: flake8 backend/
 
       - name: Run backend tests
-        run: pytest backend/
+        working-directory: backend
+        run: python manage.py test
 
       # ⚛️ Frontend (React)
       - name: Set up Node
