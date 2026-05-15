@@ -4,10 +4,16 @@ from pgvector.django import CosineDistance
 from core.models import StatementChunk
 from core.services.embedding_service import get_query_embedding
 
-nvidia_client = OpenAI(
-    base_url="https://integrate.api.nvidia.com/v1",
-    api_key=os.getenv("NVIDIA_NIM_API_KEY")
-)
+def get_nvidia_client():
+
+    nvidia_api_key = os.getenv(
+        "NVIDIA_NIM_API_KEY"
+    )
+
+    return OpenAI(
+        base_url="https://integrate.api.nvidia.com/v1",
+        api_key=nvidia_api_key,
+    )
 
 # ──────── CHATBOT: Filtered RAG ────────
 
@@ -51,6 +57,7 @@ If the answer is not in the statements, say:
 "This information is not available in the official statements."
 Keep your answer concise and factual."""
 
+    nvidia_client = get_nvidia_client()
     response = nvidia_client.chat.completions.create(
         model="meta/llama-3.1-8b-instruct",  # free NVIDIA NIM LLM
         messages=[

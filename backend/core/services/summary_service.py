@@ -6,10 +6,16 @@ from core.models import (
     CountryEventSummary
 )
 
-nvidia_client = OpenAI(
-    base_url="https://integrate.api.nvidia.com/v1",
-    api_key=os.getenv("NVIDIA_NIM_API_KEY")
-)
+def get_nvidia_client():
+
+    nvidia_api_key = os.getenv(
+        "NVIDIA_NIM_API_KEY"
+    )
+
+    return OpenAI(
+        base_url="https://integrate.api.nvidia.com/v1",
+        api_key=nvidia_api_key,
+    )
 
 # Approx safe size for Llama 3.1 prompt batching
 MAX_CHARS_PER_BATCH = 12000
@@ -20,6 +26,7 @@ def call_llm_summary(prompt: str) -> str:
     Single reusable summarization call.
     """
 
+    nvidia_client = get_nvidia_client()
     response = nvidia_client.chat.completions.create(
         model="meta/llama-3.1-8b-instruct",
         messages=[

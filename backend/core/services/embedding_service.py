@@ -7,10 +7,16 @@ from core.services.chunking_service import chunk_text
 load_dotenv()
 
 # NVIDIA NIM client — OpenAI-compatible interface, just different base_url
-nvidia_client = OpenAI(
-    base_url="https://integrate.api.nvidia.com/v1",
-    api_key=os.getenv("NVIDIA_NIM_API_KEY")
-)
+def get_nvidia_client():
+
+    nvidia_api_key = os.getenv(
+        "NVIDIA_NIM_API_KEY"
+    )
+
+    return OpenAI(
+        base_url="https://integrate.api.nvidia.com/v1",
+        api_key=nvidia_api_key,
+    )
 
 EMBEDDING_MODEL = "nvidia/nv-embedqa-e5-v5"  # best for Q&A retrieval RAG
 EMBEDDING_DIMENSIONS = 1024
@@ -21,6 +27,7 @@ def get_passage_embedding(text: str) -> list[float]:
     Use this when embedding Statement chunks going INTO the database.
     input_type='passage' tells the model this is a document being stored.
     """
+    nvidia_client = get_nvidia_client()
     response = nvidia_client.embeddings.create(
         input=[text],
         model=EMBEDDING_MODEL,
@@ -38,6 +45,7 @@ def get_query_embedding(text: str) -> list[float]:
     Use this when embedding a user's QUESTION at search time.
     input_type='query' is optimized for retrieval matching.
     """
+    nvidia_client = get_nvidia_client()
     response = nvidia_client.embeddings.create(
         input=[text],
         model=EMBEDDING_MODEL,
