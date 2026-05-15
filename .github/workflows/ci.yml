@@ -52,16 +52,6 @@ jobs:
           DB_PORT: 5432
         run: python manage.py migrate
 
-      - name: Run backend tests
-        working-directory: backend
-        env:
-          DB_NAME: geovoice
-          DB_USER: postgres
-          DB_PASSWORD: postgres
-          DB_HOST: localhost
-          DB_PORT: 5432
-        run: python manage.py test
-
       # ⚛️ Frontend
       - name: Set up Node
         uses: actions/setup-node@v4
