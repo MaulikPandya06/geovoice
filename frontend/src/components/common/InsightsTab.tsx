@@ -309,7 +309,7 @@ export default function AIInsightsTab({
               sendMessage();
             }
           }}
-          placeholder="Ask about alliances, sanctions, responses..."
+          placeholder="Type here..."
           className="flex-1 resize-none rounded-xl border border-gray-800 bg-[#08111f] px-3 py-2 text-[11px] leading-5 text-white outline-none transition placeholder:text-gray-600 focus:border-blue-500/40"
         />
         <button
