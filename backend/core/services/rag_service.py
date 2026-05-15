@@ -1,7 +1,7 @@
 import os
 from openai import OpenAI
 from pgvector.django import CosineDistance
-from core.models import Statement, StatementChunk
+from core.models import StatementChunk
 from core.services.embedding_service import get_query_embedding
 
 nvidia_client = OpenAI(

@@ -5,7 +5,6 @@ from django.test import TestCase
 from core.models import Country, Event, Statement, StatementChunk
 from core.services.rag_service import (
     answer_question,
-    generate_summary,
 )
 
 FAKE_EMBEDDING = [0.1] * 1024
