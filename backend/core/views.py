@@ -6,9 +6,10 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .models import Event, Statement, Country, CountryEventSummary
-from .serializers import EventSerializer, StatementSerializer, CountrySerializer
+from .serializers import (EventSerializer, StatementSerializer,
+                          CountrySerializer)
 
-from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
+from rest_framework.permissions import AllowAny
 from .permissions import IsAdminOrReadOnly
 
 import json
@@ -16,7 +17,7 @@ from django.views import View
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
-from core.services.rag_service import answer_question, generate_summary
+from core.services.rag_service import answer_question
 
 
 # GET + POST
@@ -54,7 +55,6 @@ class CountryDetailView(generics.RetrieveUpdateDestroyAPIView):
     permission_classes = [IsAdminOrReadOnly]
 
 
-
 # GET + POST
 class StatementListCreateView(generics.ListCreateAPIView):
     queryset = Statement.objects.all()
@@ -74,11 +74,11 @@ class EventStatementsView(generics.ListAPIView):
     serializer_class = StatementSerializer
     permission_classes = [AllowAny]
 
-
     def get_queryset(self):
         return Statement.objects.filter(event_id=self.kwargs['pk'])\
             .annotate(total_statements=Count("statement"))\
             .order_by("-total_statements")
+
 
 # GET statements by event + country
 class EventCountryStatementsView(APIView):
@@ -119,6 +119,7 @@ class EventCountryStatementsView(APIView):
             ).data
         })
 
+
 # Heatmap
 class EventHeatmapView(APIView):
     def get(self, request, pk):
@@ -151,10 +152,10 @@ class ChatbotView(View):
 
     def post(self, request, *args, **kwargs):
         try:
-            data     = json.loads(request.body)
+            data = json.loads(request.body)
             question = data.get('question', '').strip()
-            country  = data.get('country', '').strip()
-            event    = data.get('event', '').strip()
+            country = data.get('country', '').strip()
+            event = data.get('event', '').strip()
 
             if not all([question, country, event]):
                 return JsonResponse(
@@ -162,7 +163,8 @@ class ChatbotView(View):
                     status=400
                 )
 
-            answer = answer_question(query=question, country=country, event=event)
+            answer = (answer_question(query=question, country=country,
+                                      event=event))
             return JsonResponse({"answer": answer})
 
         except Exception as e:
@@ -194,27 +196,3 @@ class CountryEventSummaryView(APIView):
             "statement_count": summary.statement_count,
             "mwhen": summary.mwhen
         })
-
-
-@method_decorator(csrf_exempt, name='dispatch')
-class SummaryView(View):
-
-    def post(self, request, *args, **kwargs):
-        try:
-            data    = json.loads(request.body)
-            country = data.get('country', '').strip()
-            event   = data.get('event', '').strip()
-
-            if not all([country, event]):
-                return JsonResponse(
-                    {"error": "country and event are required"},
-                    status=400
-                )
-
-            # summary = generate_summary(country=country, event=event)
-            summary = ""
-            return JsonResponse({"summary": summary})
-
-        except Exception as e:
-            return JsonResponse({"error": str(e)}, status=500)
-

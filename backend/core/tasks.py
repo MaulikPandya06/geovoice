@@ -1,35 +1,41 @@
-# core/tasks.py
 import hashlib
-import os
-from celery import shared_task
-from elasticsearch import Elasticsearch
-from django.conf import settings
-from .models import RawPost, Country
-from datetime import datetime
-import logging
-import time
 import json
-from core.models import Event, Statement
-from openai import OpenAI
-from django.utils import timezone
+import logging
+import os
 from datetime import datetime
+from time import sleep
+
 import redis
+from celery import shared_task
+from django.conf import settings
+from django.utils import timezone
+from elasticsearch import Elasticsearch
+from openai import OpenAI
+
+from core.models import Country, Event, RawPost, Statement
 from core.services.summary_service import (
-    regenerate_country_event_summary
+    regenerate_country_event_summary,
 )
 
 logger = logging.getLogger(__name__)
 
-redis_client = redis.Redis.from_url(os.getenv("CELERY_BROKER_URL", "redis://localhost:6379/0"))
+redis_client = redis.Redis.from_url(
+    os.getenv(
+        "CELERY_BROKER_URL",
+        "redis://localhost:6379/0",
+    )
+)
 
 CLASSIFY_LOCK_KEY = "classify_rawposts_running"
-CLASSIFY_LOCK_TTL = 60 * 30  # 30 min max lock (safety valve)
+
+CLASSIFY_LOCK_TTL = 60 * 30  # 30 mins
 SUMMARY_LOCK_TTL = 60 * 10  # 10 mins
 
 
 @shared_task
 def sync_diplomaticpulse_to_rawpost():
-    COUNTRIES = {
+
+    countries = {
         "Republic of India": "India",
         "People's Republic of China": "China",
         "United States": "United States of America",
@@ -49,10 +55,15 @@ def sync_diplomaticpulse_to_rawpost():
         "Republic of Côte d'Ivoire": "Ivory Coast",
         "Czech Republic": "Czech Republic",
         "United States of America": "United States",
-        "United Kingdom of Great Britain and Northern Ireland": "United Kingdom",
+        (
+            "United Kingdom of Great Britain "
+            "and Northern Ireland"
+        ): "United Kingdom",
         "State of Palestine": "Palestine",
         "Federated States of Micronesia": "Micronesia",
-        "Republic of Trinidad and Tobago": "Trinidad",
+        (
+            "Republic of Trinidad and Tobago"
+        ): "Trinidad",
         "Republic of Türkiye": "Turkey",
         "Federal Republic of Germany": "Germany",
         "French Republic": "France",
@@ -69,9 +80,12 @@ def sync_diplomaticpulse_to_rawpost():
 
     es = Elasticsearch(
         hosts=[os.getenv("ELASTIC_HOST")],
-        http_auth=(os.getenv("ELASTIC_USERNAME"), os.getenv("ELASTIC_PASSWORD")),
+        http_auth=(
+            os.getenv("ELASTIC_USERNAME"),
+            os.getenv("ELASTIC_PASSWORD"),
+        ),
         verify_certs=False,
-        timeout=30
+        timeout=30,
     )
 
     page_size = 100
@@ -80,88 +94,136 @@ def sync_diplomaticpulse_to_rawpost():
     skipped = 0
 
     while True:
+
         result = es.search(
             index="dppa.st",
             body={"query": {"match_all": {}}},
             size=page_size,
-            from_=page * page_size
+            from_=page * page_size,
         )
 
-        hits = result['hits']['hits']
+        hits = result["hits"]["hits"]
+
         if not hits:
             break
 
         for hit in hits:
-            src = hit['_source']
-            url = src.get('url', '').strip()
+
+            src = hit["_source"]
+
+            url = src.get("url", "").strip()
+
             if not url:
                 skipped += 1
                 continue
 
             # Use URL hash as unique post_id
-            post_id = hashlib.md5(url.encode()).hexdigest()
+            post_id = hashlib.md5(
+                url.encode()
+            ).hexdigest()
 
             # Skip if already synced
-            if RawPost.objects.filter(post_id=post_id).exists():
+            if RawPost.objects.filter(
+                post_id=post_id
+            ).exists():
                 skipped += 1
                 continue
 
-            country_name = COUNTRIES.get(src.get('country', '').strip(), src.get('country', '').strip())
-            # Match country
+            country_name = countries.get(
+                src.get("country", "").strip(),
+                src.get("country", "").strip(),
+            )
+
             country = Country.objects.filter(
                 name__iexact=country_name
             ).first()
 
             if not country:
-                logger.warning(f"Country not found: {country_name}")
+
+                logger.warning(
+                    "Country not found: %s",
+                    country_name,
+                )
+
                 skipped += 1
                 continue
 
             # Parse date
             try:
                 posted_at = timezone.make_aware(
-                    datetime.strptime(src.get('posted_date', ''), '%Y-%m-%d'),
-                    timezone.get_current_timezone()
+                    datetime.strptime(
+                        src.get("posted_date", ""),
+                        "%Y-%m-%d",
+                    ),
+                    timezone.get_current_timezone(),
                 )
+
             except (ValueError, TypeError):
-                posted_at = datetime.now()
+                posted_at = timezone.now()
 
             RawPost.objects.create(
                 country=country,
-                platform='web',
-                account_handle='',
+                platform="web",
+                account_handle="",
                 post_id=post_id,
-                post_text=src.get('statement', ''),
-                combined_text=src.get('statement', ''),
+                post_text=src.get("statement", ""),
+                combined_text=src.get("statement", ""),
                 posted_at=posted_at,
                 post_url=url,
                 source_url=url,
-                title=src.get('title', ''),
-                language=src.get('language', ''),
-                content_type=src.get('content_type', ''),
-                classify_ai_processed=False,   # AI hasn't processed yet
+                title=src.get("title", ""),
+                language=src.get("language", ""),
+                content_type=src.get(
+                    "content_type",
+                    "",
+                ),
+                classify_ai_processed=False,
             )
+
             created += 1
 
         page += 1
 
-    logger.info(f"Sync complete: {created} created, {skipped} skipped")
-    return {"created": created, "skipped": skipped}
+    logger.info(
+        "Sync complete: %s created, %s skipped",
+        created,
+        skipped,
+    )
+
+    return {
+        "created": created,
+        "skipped": skipped,
+    }
 
 
 def get_nvidia_client():
-    NVIDIA_NIM_API_KEY = os.getenv("NVIDIA_NIM_API_KEY")
-    return OpenAI(
-        base_url="https://integrate.api.nvidia.com/v1",
-        api_key=NVIDIA_NIM_API_KEY
+
+    nvidia_api_key = os.getenv(
+        "NVIDIA_NIM_API_KEY"
     )
 
+    return OpenAI(
+        base_url="https://integrate.api.nvidia.com/v1",
+        api_key=nvidia_api_key,
+    )
+
+
 def build_prompt(post, event_list_text):
-    text = (post.combined_text or post.post_text or '').strip()
-    return f"""You are a senior geopolitical intelligence analyst specializing in diplomatic communications and international relations.
+
+    text = (
+        post.combined_text
+        or post.post_text
+        or ""
+    ).strip()
+
+    return f"""
+You are a senior geopolitical intelligence analyst
+specializing in diplomatic communications and
+international relations.
 
 TASK:
-Analyze the following official diplomatic statement and extract structured intelligence.
+Analyze the following official diplomatic statement
+and extract structured intelligence.
 
 ---
 STATEMENT DETAILS:
@@ -209,51 +271,92 @@ Respond in this exact JSON format:
 
 @shared_task
 def classify_rawposts_with_ai(batch_size=25):
-    redis_client.setex(CLASSIFY_LOCK_KEY, CLASSIFY_LOCK_TTL, "1")
+
+    redis_client.setex(
+        CLASSIFY_LOCK_KEY,
+        CLASSIFY_LOCK_TTL,
+        "1",
+    )
 
     try:
+
         client = get_nvidia_client()
 
         unprocessed = list(
-            RawPost.objects.filter(classify_ai_processed=False)
-            .select_related('country')[:batch_size]
+            RawPost.objects.filter(
+                classify_ai_processed=False
+            )
+            .select_related("country")[:batch_size]
         )
 
         if not unprocessed:
-            logger.info("No unprocessed RawPosts found.")
+
+            logger.info(
+                "No unprocessed RawPosts found."
+            )
+
             return {"processed": 0}
 
-        events = list(Event.objects.values('id', 'title', 'description', 'start_date'))
+        events = list(
+            Event.objects.values(
+                "id",
+                "title",
+                "description",
+                "start_date",
+            )
+        )
+
         if not events:
-            logger.warning("No Events found in DB.")
-            return {"error": "No events in DB"}
 
-        event_list_text = "\n".join([
-            f"[ID:{e['id']}] {e['title']} — {e['description']} (since {e['start_date']})"
-            for e in events
-        ])
+            logger.warning(
+                "No Events found in DB."
+            )
 
-        # Build ONE prompt with all posts
+            return {
+                "error": "No events in DB"
+            }
+
+        event_list_text = "\n".join(
+            [
+                (
+                    f"[ID:{e['id']}] "
+                    f"{e['title']} — "
+                    f"{e['description']} "
+                    f"(since {e['start_date']})"
+                )
+                for e in events
+            ]
+        )
+
         posts_text = ""
+
         for i, post in enumerate(unprocessed):
-            text = (post.combined_text or post.post_text or '').strip()[:1000]
+
+            text = (
+                post.combined_text
+                or post.post_text
+                or ""
+            ).strip()[:1000]
+
             posts_text += f"""
 POST_INDEX: {i}
 Country: {post.country.name}
 Text: {text}
----"""
+---
+"""
 
-        prompt = f"""You are a geopolitical intelligence analyst.
+        prompt = f"""
+You are a geopolitical intelligence analyst.
 
 KNOWN GEOPOLITICAL EVENTS:
 {event_list_text}
 
-Analyze EACH of the following diplomatic posts. For each, return a JSON object.
+Analyze EACH diplomatic post.
 
 POSTS:
 {posts_text}
 
-Return a JSON ARRAY (one object per post, in the same order):
+Return a JSON ARRAY:
 [
   {{
     "post_index": 0,
@@ -274,168 +377,305 @@ RULES:
 - ONLY valid JSON array, no markdown, no extra text
 """
 
-        response = client.chat.completions.create(
-            model="meta/llama-3.3-70b-instruct",
-            messages=[
-                {
-                    "role": "system",
-                    "content": "You are a geopolitical analyst. Return only a valid JSON array. No markdown."
-                },
-                {"role": "user", "content": prompt}
-            ],
-            temperature=0.1,
-            max_tokens=8192,  # higher — we need output for all posts
+        response = (
+            client.chat.completions.create(
+                model=(
+                    "meta/llama-3.3-70b-instruct"
+                ),
+                messages=[
+                    {
+                        "role": "system",
+                        "content": (
+                            "Return only valid JSON."
+                        ),
+                    },
+                    {
+                        "role": "user",
+                        "content": prompt,
+                    },
+                ],
+                temperature=0.1,
+                max_tokens=8192,
+            )
         )
 
-        raw = response.choices[0].message.content.strip()
+        raw = (
+            response.choices[0]
+            .message.content.strip()
+        )
 
-        # Clean markdown if present
         if "```" in raw:
+
             raw = raw.split("```")[1]
+
             if raw.startswith("json"):
                 raw = raw[4:]
+
             raw = raw.strip()
 
-        results = json.loads(raw)  # list of dicts
+        results = json.loads(raw)
 
         processed = 0
         created_statements = 0
         failed = 0
 
         for item in results:
+
             idx = item.get("post_index")
-            if idx is None or idx >= len(unprocessed):
+
+            if (
+                idx is None
+                or idx >= len(unprocessed)
+            ):
                 continue
 
             post = unprocessed[idx]
 
             try:
-                stance = item.get("stance", "neutral")
-                if stance not in ("support", "neutral", "oppose"):
+
+                stance = item.get(
+                    "stance",
+                    "neutral",
+                )
+
+                if stance not in (
+                    "support",
+                    "neutral",
+                    "oppose",
+                ):
                     stance = "neutral"
 
-                confidence = float(item.get("confidence", 0.0))
+                confidence = float(
+                    item.get("confidence", 0.0)
+                )
+
                 event_id = item.get("event_id")
-                event = Event.objects.filter(id=event_id).first() if event_id else None
+
+                event = None
+
+                if event_id:
+                    event = Event.objects.filter(
+                        id=event_id
+                    ).first()
 
                 if event and confidence >= 0.5:
+
                     Statement.objects.get_or_create(
                         source_url=post.post_url,
                         defaults={
-                            'raw_post': post,
-                            'country': post.country,
-                            'event': event,
-                            'text': (post.combined_text or post.post_text or ''),
-                            'stance': stance,
-                            'confidence_score': confidence,
-                            'summary': item.get('summary', ''),
-                            'topics': item.get('topics', []),
-                            'publish_date': post.posted_at.date(),
-                        }
+                            "raw_post": post,
+                            "country": post.country,
+                            "event": event,
+                            "text": (
+                                post.combined_text
+                                or post.post_text
+                                or ""
+                            ),
+                            "stance": stance,
+                            "confidence_score": (
+                                confidence
+                            ),
+                            "summary": item.get(
+                                "summary",
+                                "",
+                            ),
+                            "topics": item.get(
+                                "topics",
+                                [],
+                            ),
+                            "publish_date": (
+                                post.posted_at.date()
+                            ),
+                        },
                     )
+
                     created_statements += 1
-                    logger.info(f"[{post.country.name}] → stance: {stance} | conf: {confidence:.2f}")
+
+                    logger.info(
+                        "[%s] stance=%s conf=%.2f",
+                        post.country.name,
+                        stance,
+                        confidence,
+                    )
+
                 else:
-                    logger.info(f"[{post.country.name}] → No match or low confidence ({confidence:.2f})")
+
+                    logger.info(
+                        (
+                            "[%s] No match or "
+                            "low confidence %.2f"
+                        ),
+                        post.country.name,
+                        confidence,
+                    )
 
                 processed += 1
+
                 post.classify_ai_processed = True
                 post.save()
 
-            except Exception as e:
-                logger.error(f"Error processing post index {idx}: {e}")
+            except Exception as exc:
+
+                logger.error(
+                    (
+                        "Error processing "
+                        "post index %s: %s"
+                    ),
+                    idx,
+                    exc,
+                )
+
                 failed += 1
 
-            finally:
-                pass
-                # post.classify_ai_processed = True
-                # post.save()
+        logger.info(
+            (
+                "Batch done — "
+                "Processed: %s | "
+                "Created: %s | "
+                "Failed: %s"
+            ),
+            processed,
+            created_statements,
+            failed,
+        )
 
-        logger.info(f"Batch done — Processed: {processed} | Created: {created_statements} | Failed: {failed}")
-        return {"processed": processed, "statements_created": created_statements, "failed": failed}
+        return {
+            "processed": processed,
+            "statements_created": (
+                created_statements
+            ),
+            "failed": failed,
+        }
 
-    except json.JSONDecodeError as e:
-        logger.error(f"JSON parse failed: {e} | raw: {raw[:300]}")
-        return {"error": "json_parse_failed"}
+    except json.JSONDecodeError as exc:
 
-    except Exception as e:
-        logger.error(f"classify task error: {e}")
-        return {"error": str(e)}
+        logger.error(
+            "JSON parse failed: %s",
+            exc,
+        )
+
+        return {
+            "error": "json_parse_failed"
+        }
+
+    except Exception as exc:
+
+        logger.error(
+            "classify task error: %s",
+            exc,
+        )
+
+        return {"error": str(exc)}
 
     finally:
-        # Always release lock when done
-        redis_client.delete(CLASSIFY_LOCK_KEY)
-        logger.info("Classify lock released.")
+
+        redis_client.delete(
+            CLASSIFY_LOCK_KEY
+        )
+
+        logger.info(
+            "Classify lock released."
+        )
 
 
 @shared_task
 def sync_and_classify():
-    # Check if last classify is still running
-    if redis_client.exists(CLASSIFY_LOCK_KEY):
-        logger.info("Classify still running from last cycle. Skipping this sync.")
-        return {"skipped": True, "reason": "classify_locked"}
 
-    # Run sync first
-    sync_result = sync_diplomaticpulse_to_rawpost()
-    logger.info(f"Sync done: {sync_result}")
-
-    # Kick off classify (it will set/release the lock itself)
-    classify_rawposts_with_ai.delay()
-    return {"sync": sync_result, "classify": "queued"}
-
-
-@shared_task
-def regenerate_summary_task(country_id, event_id):
-
-    lock_key = f"summary_lock:{country_id}:{event_id}"
-
-    # Skip if recently regenerated
-    if redis_client.exists(lock_key):
+    if redis_client.exists(
+        CLASSIFY_LOCK_KEY
+    ):
 
         logger.info(
-            f"Summary regeneration skipped "
-            f"(debounced): {lock_key}"
+            (
+                "Classify still running. "
+                "Skipping sync."
+            )
         )
 
         return {
             "skipped": True,
-            "reason": "debounced"
+            "reason": "classify_locked",
         }
 
-    # Set temporary lock
+    sync_result = (
+        sync_diplomaticpulse_to_rawpost()
+    )
+
+    logger.info(
+        "Sync done: %s",
+        sync_result,
+    )
+
+    classify_rawposts_with_ai.delay()
+
+    return {
+        "sync": sync_result,
+        "classify": "queued",
+    }
+
+
+@shared_task
+def regenerate_summary_task(
+    country_id,
+    event_id,
+):
+
+    lock_key = (
+        f"summary_lock:{country_id}:{event_id}"
+    )
+
+    if redis_client.exists(lock_key):
+
+        logger.info(
+            (
+                "Summary regeneration skipped "
+                "(debounced): %s"
+            ),
+            lock_key,
+        )
+
+        return {
+            "skipped": True,
+            "reason": "debounced",
+        }
+
     redis_client.setex(
         lock_key,
         SUMMARY_LOCK_TTL,
-        "1"
+        "1",
     )
 
     try:
 
-        country = Country.objects.get(id=country_id)
+        country = Country.objects.get(
+            id=country_id
+        )
 
-        event = Event.objects.get(id=event_id)
+        event = Event.objects.get(
+            id=event_id
+        )
 
         regenerate_country_event_summary(
             country,
-            event
+            event,
         )
 
         logger.info(
-            f"Summary regenerated: "
-            f"{country.name} | {event.title}"
+            "Summary regenerated: %s | %s",
+            country.name,
+            event.title,
         )
 
-        return {
-            "success": True
-        }
+        return {"success": True}
 
-    except Exception as e:
+    except Exception as exc:
 
         logger.error(
-            f"Summary regeneration failed: {str(e)}"
+            "Summary regeneration failed: %s",
+            str(exc),
         )
 
         return {
             "success": False,
-            "error": str(e)
+            "error": str(exc),
         }

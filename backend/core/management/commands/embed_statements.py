@@ -20,7 +20,9 @@ class Command(BaseCommand):
             statements = Statement.objects.all()
         else:
             # Only embed statements that have no chunks yet
-            statements = Statement.objects.filter(chunks__isnull=True).distinct()
+            statements = (Statement.objects
+                            .filter(chunks__isnull=True)
+                            .distinct())
 
         total = statements.count()
         self.stdout.write(f"Embedding {total} statements...")
