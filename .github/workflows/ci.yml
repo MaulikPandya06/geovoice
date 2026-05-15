@@ -8,6 +8,22 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_DB: geovoice
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+
+        options: >-
+          --health-cmd="pg_isready -U postgres"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - uses: actions/checkout@v3
 
@@ -15,30 +31,39 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: 3.11
+          python-version: "3.11"
 
       - name: Install backend dependencies
-        run: pip install -r backend/requirements2.txt
+        working-directory: backend
+        run: |
+          pip install -r requirements2.txt
 
       - name: Run backend lint
-        run: flake8 backend/
+        working-directory: backend
+        run: flake8 .
+
+      - name: Run migrations
+        working-directory: backend
+        env:
+          DB_NAME: geovoice
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
+        run: python manage.py migrate
 
       - name: Run backend tests
         working-directory: backend
+        env:
+          DB_NAME: geovoice
+          DB_USER: postgres
+          DB_PASSWORD: postgres
+          DB_HOST: localhost
+          DB_PORT: 5432
         run: python manage.py test
 
-      # ⚛️ Frontend (React)
+      # ⚛️ Frontend
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
           node-version: 18
-
-    #   - name: Install frontend dependencies
-    #     run: |
-    #       cd frontend
-    #       npm install
-
-    #   - name: Build frontend
-    #     run: |
-    #       cd frontend
-    #       npm run build
