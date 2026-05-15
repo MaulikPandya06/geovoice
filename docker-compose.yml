@@ -2,16 +2,13 @@ version: "3.9"
 
 services:
   db:
-    image: postgres:15
+    image: pgvector/pgvector:pg15
     restart: unless-stopped
     env_file:
       - ./backend/.env
-    environment:
-      POSTGRES_DB: ${DB_NAME:-geovoice}
-      POSTGRES_USER: ${DB_USER:-postgres}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-postgres}
     volumes:
       - db_data:/var/lib/postgresql/data
+      - ./backend/init.sql:/docker-entrypoint-initdb.d/init.sql
 
   redis:
     image: redis:7
@@ -23,6 +20,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    command: gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3
     env_file:
       - ./backend/.env
     ports:
@@ -36,12 +34,34 @@ services:
       CELERY_BROKER_URL: redis://redis:6379/0
       CELERY_RESULT_BACKEND: redis://redis:6379/0
 
+  celery:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A config worker -l info
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db
+      - redis
+
+  celery-beat:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    command: celery -A config beat -l info
+    env_file:
+      - ./backend/.env
+    depends_on:
+      - db
+      - redis
+
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
       args:
-        VITE_API_URL: "http://backend:8000"
+        VITE_API_URL: "http://localhost:8000"
     ports:
       - "80:80"
     depends_on:
