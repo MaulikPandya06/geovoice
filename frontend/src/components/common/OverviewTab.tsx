@@ -2,7 +2,7 @@ import { formatDate } from "../../utils/formatDate";
 
 
 type Props = {
-  selectedEvent: any[];
+//   selectedEvent: any[];
   countryStatements: any[];
   summaryLoading: boolean;
   summaryError: string;
@@ -11,7 +11,7 @@ type Props = {
 
 export default function OverviewTab({
   countryStatements,
-  selectedEvent,
+//   selectedEvent,
   summaryLoading,
   summaryError,
   summary

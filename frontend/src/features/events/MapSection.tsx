@@ -1,6 +1,5 @@
 import WorldMap from "../map/WorldMap";
 import MapLegend from "../map/MapLegend";
-import { useState } from "react";
 
 
 type Props = {

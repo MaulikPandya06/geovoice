@@ -1,11 +1,6 @@
 import { useState, useEffect, useRef  } from "react";
 import { SendHorizonal, Sparkles, TriangleAlert } from "lucide-react";
 
-type Message = {
-  role: "user" | "assistant";
-  content: string;
-};
-
 type Props = {
   selectedEvent: any;
   selectedCountry: any;

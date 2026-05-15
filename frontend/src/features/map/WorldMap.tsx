@@ -153,7 +153,7 @@ export default function WorldMap({
       })
 
       // 🔥 Hover START
-      .on("mouseover", function (event, d: any) {
+      .on("mouseover", function (d: any) {
         d3.select(this)
           .attr("stroke", "#fff")
           .attr("stroke-width", 1.5);

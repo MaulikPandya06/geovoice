@@ -1,4 +1,4 @@
-import { useGlobalStore } from "../../store/useGlobalStore";
+// import { useGlobalStore } from "../../store/useGlobalStore";
 import { useEffect, useState } from "react";
 import type { HeatmapCountry } from "../../types/heatmap";
 

@@ -2,12 +2,12 @@ import { formatDate } from "../../utils/formatDate";
 
 type Props = {
   countryStatements: any[];
-  selectedCountry: any;
+//   selectedCountry: any;
 };
 
 export default function StatementsTab({
   countryStatements,
-  selectedCountry,
+//   selectedCountry,
 }: Props) {
 
   return (

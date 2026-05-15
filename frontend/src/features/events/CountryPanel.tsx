@@ -465,7 +465,7 @@ export default function CountryPanel({
         {/* Latest Statement */}
         {activeTab === "overview" && (
           <OverviewTab
-            selectedEvent={selectedEvent}
+            // selectedEvent={selectedEvent}
             countryStatements={countryStatements}
             summaryLoading={summaryLoading}
             summaryError={summaryError}
@@ -478,7 +478,7 @@ export default function CountryPanel({
         {activeTab === "statements" && (
           <StatementsTab
             countryStatements={countryStatements}
-            selectedCountry={selectedCountry}
+            // selectedCountry={selectedCountry}
           />
         )}
 
