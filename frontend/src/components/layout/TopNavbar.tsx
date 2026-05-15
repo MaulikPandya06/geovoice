@@ -1,19 +1,20 @@
-import { Search } from "lucide-react";
-
 export default function TopNavbar() {
   return (
-    <header className="flex min-h-14 flex-wrap items-center gap-3 border-b border-gray-800 px-4 py-3 sm:flex-nowrap">
-      <div className="min-w-0 flex-1 text-base font-medium">
-        Global Event Monitor
+    <header className="flex min-h-20 items-center justify-between">
+
+      {/* Logo + Brand */}
+      <div className="flex items-center gap-3">
+        <img
+          src="/logo.svg" // put your logo inside public/logo.png
+          alt="GeoStance Logo"
+          className="h-20 w-20 object-contain"
+        />
+
+        <h1 className="text-[29px] font-semibold tracking-tight text-white">
+          Geo<span className="text-[#f97316]">Stance</span>
+        </h1>
       </div>
 
-      <div className="flex h-10 w-full min-w-0 items-center gap-2 rounded-md bg-gray-900 px-3 sm:w-72">
-        <Search size={16} className="shrink-0 text-gray-400" />
-        <input
-          className="min-w-0 flex-1 bg-transparent text-sm outline-none placeholder:text-gray-500"
-          placeholder="Search events..."
-        />
-      </div>
     </header>
   );
 }

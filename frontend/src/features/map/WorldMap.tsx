@@ -141,7 +141,6 @@ export default function WorldMap({
           );
 
           const data = await res.json();
-          console.log("Country statements:", data);
 
           setCountryStatements(data.statements);
 
@@ -271,7 +270,7 @@ export default function WorldMap({
 
       <svg
         ref={svgRef}
-        className="w-full h-full block"
+        className="w-full h-full block cursor-grab"
         preserveAspectRatio="xMidYMid meet"
       />
     </div>

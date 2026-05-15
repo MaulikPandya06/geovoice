@@ -5,7 +5,7 @@ from django.db.models import Count
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from .models import Event, Statement, Country
+from .models import Event, Statement, Country, CountryEventSummary
 from .serializers import EventSerializer, StatementSerializer, CountrySerializer
 
 from rest_framework.permissions import IsAuthenticatedOrReadOnly, AllowAny
@@ -133,7 +133,7 @@ class EventHeatmapView(APIView):
             )\
             .annotate(statement_count=Count('id'))\
             .order_by('-statement_count')
-        print("**heatmap",heatmap)
+
         return Response([
             {
                 "country": i['country__name'],
@@ -169,6 +169,33 @@ class ChatbotView(View):
             return JsonResponse({"error": str(e)}, status=500)
 
 
+class CountryEventSummaryView(APIView):
+
+    permission_classes = [AllowAny]
+
+    def get(self, request):
+
+        country = request.GET.get("country")
+        event = request.GET.get("event")
+
+        summary = CountryEventSummary.objects.filter(
+            country__name=country,
+            event__title=event
+        ).first()
+
+        if not summary:
+            return Response(
+                {"summary": None},
+                status=404
+            )
+
+        return Response({
+            "summary": summary.summary,
+            "statement_count": summary.statement_count,
+            "mwhen": summary.mwhen
+        })
+
+
 @method_decorator(csrf_exempt, name='dispatch')
 class SummaryView(View):
 
@@ -184,8 +211,10 @@ class SummaryView(View):
                     status=400
                 )
 
-            summary = generate_summary(country=country, event=event)
+            # summary = generate_summary(country=country, event=event)
+            summary = ""
             return JsonResponse({"summary": summary})
 
         except Exception as e:
             return JsonResponse({"error": str(e)}, status=500)
+

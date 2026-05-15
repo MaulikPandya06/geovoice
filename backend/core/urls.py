@@ -12,7 +12,7 @@ from .views import (
     EventHeatmapView,
     EventCountryStatementsView,
     ChatbotView,
-    SummaryView
+    CountryEventSummaryView
 )
 
 urlpatterns = [
@@ -36,5 +36,5 @@ urlpatterns = [
 
     # AI Endpoints
     path('chatbot/', ChatbotView.as_view(), name='chatbot'),
-    path('summary/', SummaryView.as_view(), name='summary'),
+    path('summary/', CountryEventSummaryView.as_view(), name='summary'),
 ]

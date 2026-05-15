@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import OverviewTab from "../../components/common/OverviewTab";
 import StatementsTab from "../../components/common/StatementsTab";
 import InsightsTab from "../../components/common/InsightsTab";
@@ -69,10 +69,52 @@ export default function CountryPanel({
     "overview"
   );
 
+  const [summary, setSummary] = useState("");
+  const [summaryLoading, setSummaryLoading] = useState(false);
+  const [summaryError, setSummaryError] = useState("");
+
   const statementCount = countryStatements.length;
 
   const involvementData =
   getInvolvement(statementCount);
+
+  const fetchSummary = async () => {
+    if (!selectedCountry || !selectedEvent) return;
+
+    try {
+      setSummaryLoading(true);
+      setSummaryError("");
+
+      const params = new URLSearchParams({
+        country: selectedCountry.country_name,
+        event: selectedEvent.title,
+      });
+
+      const response = await fetch(`http://127.0.0.1:8000/api/summary/?${params.toString()}`, {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to fetch summary");
+      }
+
+      setSummary(data.summary);
+    } catch (err: any) {
+        setSummaryError(err.message);
+    } finally {
+        setSummaryLoading(false);
+    }
+  };
+
+
+  useEffect(() => {
+    fetchSummary();
+  }, [selectedCountry, selectedEvent]);
 
 
 
@@ -234,86 +276,79 @@ export default function CountryPanel({
         "
       >
         {/* Top */}
-        <div className="flex items-start justify-between gap-4">
-          {/* Country */}
-          <div className="flex items-start gap-3 min-w-0">
-            {/* Flag */}
-            <div
-              className="
-                h-12 w-[70px]
-                overflow-hidden
-                rounded-xl
-                border border-gray-700/70
-                shrink-0
-              "
-            >
-              <img
-                // src="https://flagcdn.com/w320/tr.png"
-                src={`https://flagcdn.com/w320/${selectedCountry?.isoa2_code?.toLowerCase()}.png`}
-                alt={`${selectedCountry?.full_name} Flag`}
-                className="h-full w-full object-cover"
-              />
-            </div>
+          <div className="flex items-start justify-between gap-3">
+            {/* Country */}
+            <div className="flex min-w-0 items-start gap-2.5">
 
-            {/* Name */}
-            <div className="min-w-0">
-              <h2
+              {/* Flag */}
+              <div
                 className="
-                  text-xl
-                  font-semibold
-                  tracking-tight
-                  text-white
-                  truncate
+                  h-10 w-[58px]
+                  overflow-hidden
+                  rounded-lg
+                  border border-gray-700/60
+                  shrink-0
                 "
               >
-                {selectedCountry?.country_name || "Select Country"}
-              </h2>
+                <img
+                  src={`https://flagcdn.com/w320/${selectedCountry?.isoa2_code?.toLowerCase()}.png`}
+                  alt={`${selectedCountry?.full_name} Flag`}
+                  className="h-full w-full object-cover"
+                />
+              </div>
 
-              <p className="mt-0.5 text-sm text-gray-400">
-                {selectedCountry?.full_name}
-              </p>
+              {/* Name */}
+              <div className="min-w-0 pt-0.5">
+                <h2
+                  className="
+                    truncate
+                    text-[17px]
+                    font-semibold
+                    leading-5
+                    tracking-tight
+                    text-white
+                  "
+                >
+                  {selectedCountry?.country_name || "Select Country"}
+                </h2>
+
+                <p className="mt-0.5 truncate text-[12px] leading-4 text-gray-400">
+                  {selectedCountry?.full_name}
+                </p>
+              </div>
             </div>
+
           </div>
 
-          {/* Close */}
-          {/* <button
-            className="
-              rounded-lg
-              p-2
-              text-gray-500
-              transition
-              hover:bg-gray-800/70
-              hover:text-white
-            "
-          >
-            ✕
-          </button> */}
-        </div>
-
         {/* Stats */}
-        <div className="mt-6 flex items-center justify-between gap-5">
+        <div className="mt-4 flex items-center justify-between gap-4">
+
           {/* Left */}
-          <div className="flex-1 min-w-0">
-            <p className="text-sm text-gray-400">
+          <div className="min-w-0 flex-1">
+
+            <p className="text-[12px] font-medium text-gray-400">
               Involvement Level
             </p>
 
-            <div className="mt-2 flex items-center gap-2">
-              <div className={`h-2 w-2 rounded-full ${involvementData.dotColor}`} />
+            <div className="mt-1.5 flex items-center gap-1.5">
+              <div
+                className={`h-1.5 w-1.5 rounded-full ${involvementData.dotColor}`}
+              />
 
-              <span className={`text-lg font-semibold ${involvementData.textColor}`}>
-                {/* High */}
+              <span
+                className={`text-[15px] font-semibold leading-none ${involvementData.textColor}`}
+              >
                 {involvementData.label}
               </span>
             </div>
 
             {/* Bars */}
-            <div className="mt-4 flex gap-2">
+            <div className="mt-3 flex gap-1.5">
               {[1, 2, 3, 4, 5].map((i) => (
                 <div
                   key={i}
                   className={`
-                    h-2.5
+                    h-2
                     flex-1
                     rounded-full
                     transition-all
@@ -330,14 +365,15 @@ export default function CountryPanel({
           </div>
 
           {/* Circle */}
-          <div className="relative h-24 w-24 shrink-0">
+          <div className="relative h-20 w-20 shrink-0">
+
             {/* Glow */}
             <div
               className="
                 absolute inset-0
                 rounded-full
                 bg-red-500/10
-                blur-xl
+                blur-lg
               "
             />
 
@@ -346,7 +382,7 @@ export default function CountryPanel({
               className="
                 absolute inset-0
                 rounded-full
-                border-[4px]
+                border-[3px]
                 border-orange-400
                 border-r-red-500
                 border-b-red-600
@@ -356,21 +392,20 @@ export default function CountryPanel({
             {/* Inner */}
             <div
               className="
-                absolute inset-[9px]
-                rounded-full
-                border border-gray-800
-                bg-[#07111f]
+                absolute inset-[7px]
                 flex flex-col
                 items-center
                 justify-center
+                rounded-full
+                border border-gray-800
+                bg-[#07111f]
               "
             >
-              <span className="text-3xl font-bold text-white leading-none">
-                {/* 23 */}
+              <span className="text-2xl font-bold leading-none text-white">
                 {countryStatements.length}
               </span>
 
-              <span className="mt-1 text-[11px] text-gray-400">
+              <span className="mt-0.5 text-[10px] text-gray-400">
                 Statements
               </span>
             </div>
@@ -430,7 +465,12 @@ export default function CountryPanel({
         {/* Latest Statement */}
         {activeTab === "overview" && (
           <OverviewTab
+            selectedEvent={selectedEvent}
             countryStatements={countryStatements}
+            summaryLoading={summaryLoading}
+            summaryError={summaryError}
+            summary={summary}
+
           />
         )}
 
@@ -443,7 +483,12 @@ export default function CountryPanel({
         )}
 
         {/* AI Summary */}
-        {activeTab === "insights" && <InsightsTab selectedEvent={selectedEvent} />}
+        {activeTab === "insights" && (
+          <InsightsTab
+            selectedEvent={selectedEvent}
+            selectedCountry={selectedCountry}
+          />
+        )}
 
         {/* Distribution */}
         {/* <section

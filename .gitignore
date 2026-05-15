@@ -144,3 +144,12 @@ dump.rdb
 # Mac/Linux hidden
 # =========================
 .*.swp
+
+# =========================
+# Celery
+# =========================
+*.dat
+*.bak
+*.dir
+celerybeat-schedule
+celerybeat-schedule.*

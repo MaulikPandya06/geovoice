@@ -182,6 +182,47 @@ export default function EventsPanel({
         );
       })}
     </div>
+
+    {/* Footer Note */}
+    <div className="shrink-0 border-t border-gray-800 p-4">
+      <div
+        className="
+          flex items-start gap-3
+          rounded-2xl
+          border border-blue-500/20
+          bg-blue-500/10
+          px-4
+          py-3
+          backdrop-blur-sm
+        "
+      >
+        {/* Info Icon */}
+        <div
+          className="
+            mt-0.5
+            flex h-5 w-5 shrink-0 items-center justify-center
+            rounded-full
+            bg-blue-500/20
+            text-[11px]
+            font-bold
+            text-blue-300
+          "
+        >
+          i
+        </div>
+
+        {/* Text */}
+        <div>
+          <p className="text-xs font-medium tracking-wide text-blue-200">
+            Info
+          </p>
+
+          <p className="mt-1 text-xs leading-relaxed text-blue-100/80">
+            More global events and geopolitical developments will be added soon.
+          </p>
+        </div>
+      </div>
+    </div>
   </aside>
 );
 }

@@ -1,4 +1,5 @@
 import DevelopmentBanner from "../common/DevelopmentBanner";
+import TopNavbar from "../layout/TopNavbar";
 
 
 export default function AppLayout({
@@ -13,7 +14,7 @@ export default function AppLayout({
       <div className="flex flex-1 flex-col min-w-0">
         {/* Navbar */}
         <header className="h-14 border-b border-gray-800 flex items-center px-4 shrink-0">
-          Global Event Monitor
+          <TopNavbar />
         </header>
 
         <DevelopmentBanner />

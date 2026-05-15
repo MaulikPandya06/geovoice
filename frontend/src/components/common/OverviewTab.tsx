@@ -2,11 +2,20 @@ import { formatDate } from "../../utils/formatDate";
 
 
 type Props = {
+  selectedEvent: any[];
   countryStatements: any[];
+  summaryLoading: boolean;
+  summaryError: string;
+  summary: string;
 };
 
 export default function OverviewTab({
   countryStatements,
+  selectedEvent,
+  summaryLoading,
+  summaryError,
+  summary
+
 }: Props) {
     return(
         <div className="space-y-4">
@@ -93,7 +102,7 @@ export default function OverviewTab({
                     </span>
                 </div>
 
-                <p
+                {/* <p
                     className="
                     mt-4
                     text-sm
@@ -104,7 +113,21 @@ export default function OverviewTab({
                     Lorem Ipsum is simply dummy text of the printing and typesetting industry.
                     Lorem Ipsum has been the industry's standard dummy text ever since the 1500s,
                     into electronic typesetting, remaining essentially unchanged.
-                </p>
+                </p> */}
+
+                {summaryLoading ? (
+                    <p className="text-gray-400 text-sm">
+                    Generating AI summary...
+                    </p>
+                ) : summaryError ? (
+                    <p className="text-red-400 text-sm">
+                    {summaryError}
+                    </p>
+                ) : (
+                    <p className="text-gray-300 leading-7 text-sm">
+                    {summary}
+                    </p>
+                )}
             </section>
         </div>
 

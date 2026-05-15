@@ -9,7 +9,6 @@ export default function StatementsTab({
   countryStatements,
   selectedCountry,
 }: Props) {
-  console.log("***countryStatements", countryStatements);
 
   return (
     <div className="relative pl-10">

@@ -41,7 +41,7 @@ class EventCRUDTest(TestCase):
             "title": "Delete Me",
             "start_date": "2024-01-01"
         })
-        print("***res",res)
+
         event_id = res.data['id']
 
         response = self.client.delete(f'/api/events/{event_id}/')

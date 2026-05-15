@@ -14,6 +14,9 @@ from openai import OpenAI
 from django.utils import timezone
 from datetime import datetime
 import redis
+from core.services.summary_service import (
+    regenerate_country_event_summary
+)
 
 logger = logging.getLogger(__name__)
 
@@ -21,6 +24,7 @@ redis_client = redis.Redis.from_url(os.getenv("CELERY_BROKER_URL", "redis://loca
 
 CLASSIFY_LOCK_KEY = "classify_rawposts_running"
 CLASSIFY_LOCK_TTL = 60 * 30  # 30 min max lock (safety valve)
+SUMMARY_LOCK_TTL = 60 * 10  # 10 mins
 
 
 @shared_task
@@ -28,6 +32,7 @@ def sync_diplomaticpulse_to_rawpost():
     COUNTRIES = {
         "Republic of India": "India",
         "People's Republic of China": "China",
+        "United States": "United States of America",
         "Russian Federation": "Russia",
         "Islamic Republic of Iran": "Iran",
         "Syrian Arab Republic": "Syria",
@@ -377,3 +382,60 @@ def sync_and_classify():
     # Kick off classify (it will set/release the lock itself)
     classify_rawposts_with_ai.delay()
     return {"sync": sync_result, "classify": "queued"}
+
+
+@shared_task
+def regenerate_summary_task(country_id, event_id):
+
+    lock_key = f"summary_lock:{country_id}:{event_id}"
+
+    # Skip if recently regenerated
+    if redis_client.exists(lock_key):
+
+        logger.info(
+            f"Summary regeneration skipped "
+            f"(debounced): {lock_key}"
+        )
+
+        return {
+            "skipped": True,
+            "reason": "debounced"
+        }
+
+    # Set temporary lock
+    redis_client.setex(
+        lock_key,
+        SUMMARY_LOCK_TTL,
+        "1"
+    )
+
+    try:
+
+        country = Country.objects.get(id=country_id)
+
+        event = Event.objects.get(id=event_id)
+
+        regenerate_country_event_summary(
+            country,
+            event
+        )
+
+        logger.info(
+            f"Summary regenerated: "
+            f"{country.name} | {event.title}"
+        )
+
+        return {
+            "success": True
+        }
+
+    except Exception as e:
+
+        logger.error(
+            f"Summary regeneration failed: {str(e)}"
+        )
+
+        return {
+            "success": False,
+            "error": str(e)
+        }

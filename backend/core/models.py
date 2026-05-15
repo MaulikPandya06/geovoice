@@ -105,3 +105,27 @@ class StatementChunk(models.Model):
 
     def __str__(self):
         return f"Statement {self.statement_id} | Chunk {self.chunk_index}"
+
+
+class CountryEventSummary(models.Model):
+    country = models.ForeignKey(
+        Country,
+        on_delete=models.CASCADE
+    )
+
+    event = models.ForeignKey(
+        Event,
+        on_delete=models.CASCADE
+    )
+
+    summary = models.TextField(null=True, blank=True)
+
+    statement_count = models.IntegerField(default=0)
+
+    mwhen = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ('country', 'event')
+
+    def __str__(self):
+        return f"{self.country.name} - {self.event.title}"
