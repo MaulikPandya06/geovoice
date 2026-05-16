@@ -32,7 +32,7 @@ SECRET_KEY = config("SECRET_KEY", default="unsafe-secret")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = config("DEBUG", default=False, cast=bool)
 
-ALLOWED_HOSTS = ['geovoice.onrender.com']
+ALLOWED_HOSTS = ['geovoice.onrender.com', "geostance.in", "www.geostance.in",]
 ALLOWED_HOSTS.extend(
     filter(
         None,
@@ -219,10 +219,14 @@ CELERY_RESULT_BACKEND = config(
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "https://geovoice.vercel.app",
+    "https://geostance.in",
+    "https://www.geostance.in",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
     "https://geovoice.vercel.app",
+    "https://geostance.in",
+    "https://www.geostance.in",
 ]
 
 STATIC_URL = "/static/"
