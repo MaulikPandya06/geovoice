@@ -82,6 +82,7 @@ class EventStatementsView(generics.ListAPIView):
 
 # GET statements by event + country
 class EventCountryStatementsView(APIView):
+    serializer_class = StatementSerializer
     permission_classes = [AllowAny]
 
     def get(self, request, event_id, country_code):
