@@ -218,11 +218,11 @@ CELERY_RESULT_BACKEND = config(
 
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
-    "https://geovoice.vercel.app/",
+    "https://geovoice.vercel.app",
 ]
 
 CSRF_TRUSTED_ORIGINS = [
-    "https://geovoice.vercel.app/",
+    "https://geovoice.vercel.app",
 ]
 
 STATIC_URL = "/static/"
