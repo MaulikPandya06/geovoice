@@ -153,7 +153,8 @@ export default function WorldMap({
       })
 
       // 🔥 Hover START
-      .on("mouseover", function (d: any) {
+      .on("mouseover", function (event, d: any) {
+        event = event
         d3.select(this)
           .attr("stroke", "#fff")
           .attr("stroke-width", 1.5);
@@ -169,7 +170,7 @@ export default function WorldMap({
         );
 
         const value = country?.statement_count || 0;
-
+        console.log("****d",d.properties)
         // 🌍 Country name
         const countryName =
           d.properties?.name ||
