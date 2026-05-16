@@ -1,0 +1,10 @@
+[flake8]
+# Comma-separated list of files or directories to skip
+exclude =
+    .git,
+    __pycache__,
+    build,
+    dist,
+    venv,
+    docs/source/conf.py,
+    old_code/*.py
