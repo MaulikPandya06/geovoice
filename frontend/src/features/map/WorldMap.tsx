@@ -3,6 +3,7 @@ import * as d3 from "d3";
 import { feature } from "topojson-client";
 import worldData from "./world-110m.json";
 import colorScale from "../../map/utils/colorScale";
+import { fetchWithLoading } from "../../services/fetchWithLoading";
 
 type Props = {
   heatmapData: any[];
@@ -137,7 +138,8 @@ export default function WorldMap({
         if (!countryCode || !selectedEvent) return;
 
         try {
-          const res = await fetch(
+          // const res = await fetch(
+          const res = await fetchWithLoading(
             `${API_URL}/api/events/${selectedEvent.id}/countries/${countryCode}/statements/`
           );
 
