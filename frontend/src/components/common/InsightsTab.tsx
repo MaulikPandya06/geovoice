@@ -51,9 +51,10 @@ export default function AIInsightsTab({
 
     try {
       setLoading(true);
+      const API_URL = import.meta.env.VITE_API_URL;
 
       const response = await fetch(
-        "http://127.0.0.1:8000/api/chatbot/",
+        `${API_URL}/api/chatbot/`,
         {
           method: "POST",
           headers: {

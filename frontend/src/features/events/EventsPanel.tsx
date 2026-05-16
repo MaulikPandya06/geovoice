@@ -32,12 +32,13 @@ export default function EventsPanel({
   // const { selectedEvent, setEvent } = useGlobalStore();
 
   const [events, setEvents] = useState<EventType[]>([]);
+  const API_URL = import.meta.env.VITE_API_URL;
 
   useEffect(() => {
     const fetchEvents = async () => {
       try {
         const res = await fetch(
-          "http://127.0.0.1:8000/api/events/"
+          `${API_URL}/api/events/`
         );
 
         const data = await res.json();
@@ -58,10 +59,11 @@ export default function EventsPanel({
 
   const handleEventClick = async (event: any) => {
   setSelectedEvent(event);
+  const API_URL = import.meta.env.VITE_API_URL;
 
   try {
     const res = await fetch(
-      `http://127.0.0.1:8000/api/events/${event.id}/heatmap/`
+      `${API_URL}/api/events/${event.id}/heatmap/`
     );
 
     const data = await res.json();

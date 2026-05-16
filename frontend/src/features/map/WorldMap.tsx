@@ -132,12 +132,13 @@ export default function WorldMap({
       // On click, set selected country and fetch statements
       .on("click", async function (_, d: any) {
         const countryCode = d.properties?.ISO_A3;
+        const API_URL = import.meta.env.VITE_API_URL;
 
         if (!countryCode || !selectedEvent) return;
 
         try {
           const res = await fetch(
-            `http://127.0.0.1:8000/api/events/${selectedEvent.id}/countries/${countryCode}/statements/`
+            `${API_URL}/api/events/${selectedEvent.id}/countries/${countryCode}/statements/`
           );
 
           const data = await res.json();

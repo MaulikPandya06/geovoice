@@ -47,7 +47,7 @@ def answer_question(query: str, country: str, event: str) -> str:
     ])
 
     # 3. GENERATE — call LLM with retrieved context
-    system_prompt = f"""You are a geopolitical analysis assistant for GeoVoice.
+    system_prompt = f"""You are a geopolitical analysis assistant for GeoStance.
 Answer ONLY based on the official statements provided below.
 Country: {country} | Event: {event}
 

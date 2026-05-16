@@ -90,7 +90,8 @@ export default function CountryPanel({
         event: selectedEvent.title,
       });
 
-      const response = await fetch(`http://127.0.0.1:8000/api/summary/?${params.toString()}`, {
+      const API_URL = import.meta.env.VITE_API_URL;
+      const response = await fetch(`${API_URL}/api/summary/?${params.toString()}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
