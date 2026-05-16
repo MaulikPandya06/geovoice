@@ -3,6 +3,7 @@ import OverviewTab from "../../components/common/OverviewTab";
 import StatementsTab from "../../components/common/StatementsTab";
 import InsightsTab from "../../components/common/InsightsTab";
 import { getInvolvement } from "../../utils/involvement";
+import { fetchWithLoading } from "../../services/fetchWithLoading";
 
 type Props = {
   selectedCountry: any;
@@ -91,7 +92,8 @@ export default function CountryPanel({
       });
 
       const API_URL = import.meta.env.VITE_API_URL;
-      const response = await fetch(`${API_URL}/api/summary/?${params.toString()}`, {
+      // const response = await fetch(`${API_URL}/api/summary/?${params.toString()}`, {
+      const response = await fetchWithLoading(`${API_URL}/api/summary/?${params.toString()}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",

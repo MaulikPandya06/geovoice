@@ -1,6 +1,7 @@
 // import { useGlobalStore } from "../../store/useGlobalStore";
 import { useEffect, useState } from "react";
 import type { HeatmapCountry } from "../../types/heatmap";
+import { fetchWithLoading } from "../../services/fetchWithLoading";
 
 
 // const events = [
@@ -37,7 +38,8 @@ export default function EventsPanel({
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const res = await fetch(
+        // const res = await fetch(
+        const res = await fetchWithLoading(
           `${API_URL}/api/events/`
         );
 
@@ -62,7 +64,8 @@ export default function EventsPanel({
   const API_URL = import.meta.env.VITE_API_URL;
 
   try {
-    const res = await fetch(
+    // const res = await fetch(
+    const res = await fetchWithLoading(
       `${API_URL}/api/events/${event.id}/heatmap/`
     );
 

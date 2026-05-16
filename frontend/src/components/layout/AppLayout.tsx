@@ -1,5 +1,6 @@
 import DevelopmentBanner from "../common/DevelopmentBanner";
 import TopNavbar from "../layout/TopNavbar";
+import LoadingScreen from "../common/LoadingScreen";
 
 
 export default function AppLayout({
@@ -8,6 +9,8 @@ export default function AppLayout({
   children: React.ReactNode;
 }) {
   return (
+    <>
+    <LoadingScreen />
     <div className="h-dvh flex bg-gray-950 text-white overflow-hidden">
       {/* Sidebar (optional for now) */}
 
@@ -25,5 +28,6 @@ export default function AppLayout({
         </main>
       </div>
     </div>
+    </>
   );
 }

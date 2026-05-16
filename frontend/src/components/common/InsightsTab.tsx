@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef  } from "react";
 import { SendHorizonal, Sparkles, TriangleAlert } from "lucide-react";
+import { fetchWithLoading } from "../../services/fetchWithLoading";
 
 type Props = {
   selectedEvent: any;
@@ -53,7 +54,8 @@ export default function AIInsightsTab({
       setLoading(true);
       const API_URL = import.meta.env.VITE_API_URL;
 
-      const response = await fetch(
+      // const response = await fetch(
+      const response = await fetchWithLoading(
         `${API_URL}/api/chatbot/`,
         {
           method: "POST",
